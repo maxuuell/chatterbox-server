@@ -24,7 +24,7 @@ var app = {
 
     setInterval(function(){
       app.fetch();
-    }, 3000)
+    }, 3000);
   },
 
   send : function (message) {
@@ -114,7 +114,7 @@ var app = {
     $text.text(message.text).appendTo($chat);
       
     app.$chats.append($chat);
-   },
+  },
 
   renderRoomList : function (messages) {
     app.$roomSelect.html('<option value="newRoom">New room...</option></select>');
@@ -129,7 +129,7 @@ var app = {
           app.renderRoom(roomname);
           rooms[roomname] = true;
         }
-      })
+      });
     }
 
     app.$roomSelect.val(app.roomname);
@@ -175,4 +175,4 @@ var app = {
     app.$chats.empty();
   },
 
-}
+};
