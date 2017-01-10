@@ -20,6 +20,7 @@ var defaultCorsHeaders = {
 };
 
 var payload = {results: []};
+var idCounter = 1;
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -42,7 +43,7 @@ var requestHandler = function(request, response) {
   var statusCode = 200;
 
   var headers = defaultCorsHeaders;
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
   response.writeHead(statusCode, headers);
 
@@ -51,14 +52,24 @@ var requestHandler = function(request, response) {
       var res = JSON.stringify(payload);
       response.end(res);
     }
-    if ( request.method === 'POST' ) {
+    if (request.method === 'POST') {
+      idCounter++;
       request.on('data', function(data) {
         var data = JSON.parse(data);
+        
+        data.objectId = idCounter;
         payload.results.push(data);
       });
 
       response.writeHead(201, headers);
       response.end(JSON.stringify(payload));
+    }
+    if (request.method === 'OPTIONS') {
+      if (request.headers['access-control-request-method'] === 'GET') {
+        var res = JSON.stringify(payload);
+        headers['Content-Type'] = 'application/json';
+        response.end(res);
+      }
     }
   } else {
     response.writeHead(404, headers);
