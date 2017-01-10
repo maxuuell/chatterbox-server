@@ -48,17 +48,15 @@ var requestHandler = function(request, response) {
 
   if (request.url === '/classes/messages') {
     if (request.method === 'GET') {
-      var res = JSON.stringify(payload)
+      var res = JSON.stringify(payload);
       response.end(res);
     }
     if ( request.method === 'POST' ) {
-      console.log('JSON', request.headers.body);
       request.on('data', function(data) {
         var data = JSON.parse(data);
         payload.results.push(data);
-      })
+      });
 
-      
       response.writeHead(201, headers);
       response.end(JSON.stringify(payload));
     }
@@ -78,4 +76,4 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-module.exports = requestHandler;
+exports.requestHandler = requestHandler;
