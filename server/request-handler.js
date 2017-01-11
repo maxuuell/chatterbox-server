@@ -1,16 +1,6 @@
-/*************************************************************
-
-You should implement your request handler function in this file.
-
-requestHandler is already getting passed to http.createServer()
-in basic-server.js, but it won't work as is.
-
-You'll have to figure out a way to export this function from
-this file and include it in basic-server.js so that it actually works.
-
-*Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
-
-**************************************************************/
+var fs = require('fs');
+var path = require('path');
+var url = require('url');
 
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
@@ -19,63 +9,104 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+
+
+
 var payload = {results: []};
 var idCounter = 1;
+var clientRoot = path.dirname(__dirname) + '/client';
 
 var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
-
-  // Do some basic logging.
-  //
-  // Adding more logging to your server can be an easy way to get passive
-  // debugging help, but you should always be careful about leaving stray
-  // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  var urlParts = url.parse(request.url);
 
   // The outgoing status.
   var statusCode = 200;
 
   var headers = defaultCorsHeaders;
-  headers['Content-Type'] = 'application/json';
 
-  response.writeHead(statusCode, headers);
+  if (urlParts.pathname === '/') {
+    var index = __dirname + '/../client/index.html';
+    fs.readFile(index, function (err, html) {
+      if (err) {
+        throw err;
+        response.end('ERROR');
+      }
 
-  if (request.url === '/classes/messages') {
+      headers['Content-Type'] = 'text/html';
+      response.writeHead(200, headers);
+      response.end(html.toString());
+    });
+  } else if (urlParts.pathname === '/classes/messages') {
     if (request.method === 'GET') {
       var res = JSON.stringify(payload);
+
+      headers['Content-Type'] = 'application/json';
+      response.writeHead(statusCode, headers);
       response.end(res);
     }
     if (request.method === 'POST') {
       idCounter++;
       request.on('data', function(data) {
         var data = JSON.parse(data);
-        
+
         data.objectId = idCounter;
         payload.results.push(data);
       });
 
+      headers['Content-Type'] = 'application/json';
       response.writeHead(201, headers);
       response.end(JSON.stringify(payload));
     }
     if (request.method === 'OPTIONS') {
       if (request.headers['access-control-request-method'] === 'GET') {
         var res = JSON.stringify(payload);
+
         headers['Content-Type'] = 'application/json';
+        response.writeHead(statusCode, headers);
         response.end(res);
       }
     }
+  } else if (urlParts.pathname === '/styles/styles.css') {
+    var index =  clientRoot + request.url;
+    fs.readFile(index, function (err, sheet) {
+      if (err) {
+        throw err;
+        response.end('ERROR');
+      }
+
+      headers['Content-Type'] = "text/css";
+      response.writeHead(200, headers);
+      response.end(sheet.toString());
+    });
+  } else if (urlParts.pathname === "/bower_components/jquery/dist/jquery.js") {
+    var index =  clientRoot + urlParts.pathname;
+    fs.readFile(index, function (err, sheet) {
+      if (err) {
+        throw err;
+        response.end('ERROR');
+      }
+
+      headers['Content-Type'] = "application/javascript";
+      response.writeHead(200, headers);
+      response.end(sheet.toString());
+    });
+  } else if (urlParts.pathname === '/scripts/app.js') {
+    var index =  clientRoot + urlParts.pathname;
+    fs.readFile(index, function (err, sheet) {
+      if (err) {
+        throw err;
+        response.end('ERROR');
+      }
+
+      headers['Content-Type'] = "application/javascript";
+      response.writeHead(200, headers);
+      response.end(sheet.toString());
+    });
   } else {
     response.writeHead(404, headers);
-    response.end('404 Not found');
+    response.end();
   }
-
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
