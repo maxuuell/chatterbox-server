@@ -16,6 +16,7 @@ var app = {
     app.$send = $("#send");
 
     app.$send.on('submit', app.handleSubmit);
+    
     app.$roomSelect.on('change', app.handleRoomChange);
     // event delegation
     app.$chats.on('click', '.username', app.handleUsernameClick);
